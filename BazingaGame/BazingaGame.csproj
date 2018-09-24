@@ -18,6 +18,8 @@
     <SccLocalPath>SAK</SccLocalPath>
     <SccAuxPath>SAK</SccAuxPath>
     <SccProvider>SAK</SccProvider>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
     <PlatformTarget>x86</PlatformTarget>
@@ -28,6 +30,7 @@
     <DefineConstants>DEBUG;TRACE;WINDOWS</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <PlatformTarget>x86</PlatformTarget>
@@ -37,13 +40,24 @@
     <DefineConstants>TRACE;WINDOWS</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationIcon>Icon.ico</ApplicationIcon>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'DebugSkipMenu|x86'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x86\DebugSkipMenu\</OutputPath>
+    <DefineConstants>DEBUG;TRACE;WINDOWS</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
   <ItemGroup>
     <Compile Include="Animations\AnimatedSprite.cs" />
-    <Compile Include="Input\InputHelper.cs" />
+    <Compile Include="HUD\HUD.cs" />
     <Compile Include="Menu\Menu.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -53,13 +67,20 @@
     <Compile Include="Menu\MenuEntry.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Prefabs\BazingaCollisionGroups.cs" />
+    <Compile Include="Prefabs\StatefulGameComponent.cs" />
+    <Compile Include="SimpleGameObject.cs" />
+    <Compile Include="Sounds\SoundManager.cs" />
+    <Compile Include="States\CrateStates\CrateBreakState.cs" />
+    <Compile Include="States\CrateStates\CrateSolidState.cs" />
     <Compile Include="States\Game\GameMapState.cs" />
     <Compile Include="States\Game\IGameState.cs" />
     <Compile Include="States\Game\MainMenuState.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="States\Game\OptionsState.cs" />
     <Compile Include="States\Game\SplashScreenState.cs" />
-    <Compile Include="States\Player\IPlayerState.cs" />
+    <Compile Include="States\IGameComponentState.cs" />
     <Compile Include="States\Player\PlayerAttackState.cs" />
     <Compile Include="States\Player\PlayerIdleState.cs" />
     <Compile Include="States\Player\PlayerJumpState.cs" />
@@ -67,12 +88,12 @@
     <Compile Include="Animations\SpriteState.cs" />
     <Compile Include="BazingaGame.cs" />
     <Compile Include="Camera\Camera.cs" />
-    <Compile Include="GameObject.cs" />
+    <Compile Include="Prefabs\StatelessGameComponent.cs" />
     <Compile Include="Map\Direction.cs" />
     <Compile Include="Map\Map.cs" />
     <Compile Include="Particles\Particle.cs" />
     <Compile Include="Particles\ParticleGenerator.cs" />
-    <Compile Include="Prefabs\Dynamic\BazingaBox.cs" />
+    <Compile Include="Prefabs\Dynamic\Crate.cs" />
     <Compile Include="Prefabs\Special\BazingaPlayer.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -83,6 +104,7 @@
       <HintPath>$(MSBuildProgramFiles32)\MonoGame\v3.0\Assemblies\Windows\MonoGame.Framework.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
@@ -100,9 +122,23 @@
       <Project>{0aad36e3-51a5-4a07-ab60-5c8a66bd38b7}</Project>
       <Name>Farseer Physics MonoGame</Name>
     </ProjectReference>
+    <ProjectReference Include="..\GameInput\GameInput.csproj">
+      <Project>{7467d59a-7a19-42be-8441-fff279086795}</Project>
+      <Name>GameInput</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MapFileModel\MapFileModel.csproj">
+      <Project>{82ab5cbc-a775-4452-985b-59c4fcc3d8a0}</Project>
+      <Name>MapFileModel</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Prefabs\Static\" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config" />
+    <None Include="Map\Levels\first.baz">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath)\MonoGame\v3.0\MonoGame.Content.Builder.targets" />

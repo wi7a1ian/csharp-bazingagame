@@ -1,4 +1,5 @@
 ﻿using BazingaGame.Prefabs;
+using BazingaGame.Sounds;
 using FarseerPhysics.Dynamics;
 using FarseerPhysics.Dynamics.Contacts;
 using Microsoft.Xna.Framework;
@@ -10,7 +11,7 @@ using System.Text;
 
 namespace BazingaGame.States.Player
 {
-    class PlayerSlideState : IPlayerState
+    class PlayerSlideState : IGameComponentState
     {
         private const int FixtureRadiusX = 40;
         private const int FixtureRadiusY = 35;
@@ -22,14 +23,22 @@ namespace BazingaGame.States.Player
         private readonly TimeSpan MinSlideTimeSpan = TimeSpan.FromMilliseconds(500);
         private TimeSpan _slideStartTime = TimeSpan.Zero;
 
-        public void Enter(BazingaPlayer player)
+        private const string SoundEffect = @"Sounds/slide";
+
+        private BazingaPlayer player;
+
+        public void EnterState(StatefulGameComponent target)
         {
+            player = target as BazingaPlayer;
+
             var offset = FixtureOffset * new Vector2(player.Animation.IsFlippedHorizontally ? -1 : 1, 1);
 
             player.SetBodyFixture(FixtureRadiusX, FixtureRadiusY, offset);
             player.Animation.Repeat = false;
             player.Animation.PlaySprite(Animations.SpriteState.Slide);
             player.Body.OnCollision += PlayerCollisionHandler;
+
+            player.Sounds.PlaySound(SoundEffect, false);
         }
 
         /// <summary>
@@ -46,12 +55,12 @@ namespace BazingaGame.States.Player
             return true;
         }
 
-        public IPlayerState HandleInput(BazingaPlayer player, KeyboardState input)
+        public IGameComponentState HandleInput(KeyboardState input)
         {
             return null;
         }
 
-        public IPlayerState Update(BazingaPlayer player, GameTime gameTime)
+        public IGameComponentState Update(GameTime gameTime)
         {
             if(_slideStartTime == TimeSpan.Zero)
             {
@@ -64,7 +73,7 @@ namespace BazingaGame.States.Player
                 return null;
         }
 
-        public void Exit(BazingaPlayer player)
+        public void ExitState()
         {
             player.Body.OnCollision -= PlayerCollisionHandler;
         }

@@ -2,8 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using BazingaGame.States.Game;
+using GameInput;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
+using BazingaGame.Prefabs;
 
 namespace BazingaGame.UI
 {
@@ -20,7 +24,7 @@ namespace BazingaGame.UI
     /// entries in different ways. This also provides an event that will be raised
     /// when the menu entry is selected.
     /// </summary>
-    public sealed class MenuEntry: GameObject
+    public sealed class MenuEntry: StatelessGameComponent
     {
         private Vector2 _baseOrigin;
 
@@ -36,14 +40,16 @@ namespace BazingaGame.UI
         /// The entries transition out of the selection effect when they are deselected.
         /// </remarks>
         private float _selectionFade;
+		private bool _isSelected;
 
         private EntryType _type;
         private float _width;
+		private Type _nextGameState;
 
         /// <summary>
         /// Constructs a new menu entry with the specified text.
         /// </summary>
-        public MenuEntry(BazingaGame game, Menu menu, string text, EntryType type)
+		public MenuEntry(BazingaGame game, Menu menu, string text, EntryType type, Type nextGameState = null)
             :base(game)
         {
             Text = text;
@@ -51,8 +57,9 @@ namespace BazingaGame.UI
             _menu = menu;
             _scale = 0.9f;
             Alpha = 1.0f;
+			_isSelected = false;
+			_nextGameState = nextGameState;
         }
-
 
         /// <summary>
         /// Gets or sets the text of this menu entry.
@@ -91,13 +98,16 @@ namespace BazingaGame.UI
         /// <summary>
         /// Updates the menu entry.
         /// </summary>
-        public void Update(bool isSelected, GameTime gameTime)
+		public IGameState Update(bool isSelected, GameTime gameTime, InputHelper inputHelper)
         {
             // there is no such thing as a selected item on Windows Phone, so we always
             // force isSelected to be false
 #if WINDOWS_PHONE
             isSelected = false;
 #endif
+			IGameState returnedGameState = null;
+
+			_isSelected = isSelected;
             // When the menu selection changes, entries gradually fade between
             // their selected and deselected appearance, rather than instantly
             // popping to the new state.
@@ -109,27 +119,40 @@ namespace BazingaGame.UI
                 else
                     _selectionFade = Math.Max(_selectionFade - fadeSpeed, 0f);
 
-                _scale = 0.7f + 0.1f * _selectionFade;
+				_scale = 0.7f + 0.1f * _selectionFade * (_isSelected ? 2f : 1f);
             }
+
+			if (inputHelper.IsNewKeyPress(Keys.Enter) && IsExitItem() && _isSelected)
+			{
+				Game.Exit();
+			}
+
+			if (inputHelper.IsNewKeyPress(Keys.Enter) && _nextGameState != null && _isSelected)
+			{
+				returnedGameState = (IGameState)_nextGameState.GetConstructor(new Type[] { typeof(BazingaGame) }).Invoke(new object[] { Game });
+			}
+
+			return returnedGameState;
         }
 
         /// <summary>
         /// Draws the menu entry. This can be overridden to customize the appearance.
         /// </summary>
-        public void Draw()
+		public void Draw(SpriteBatch spriteBatch)
         {
             SpriteFont font = _menu.FontMenu;
 
             // Draw the selected entry in yellow, otherwise white
-            Color color = _type == EntryType.Separator ? Color.DarkOrange : Color.Lerp(Color.White, new Color(255, 210, 0), _selectionFade);
+			Color color = _type == EntryType.Separator ? Color.DarkOrange : Color.Lerp(new Color(0xa1, 0x77, 0x4d), new Color(0xe9, 0xaa, 0x45), _selectionFade);
             color *= Alpha;
+			// #e9aa45
 
-            SpriteBatch.Begin();
+			//spriteBatch.Begin();
             // Draw text, centered on the middle of each line.
-            SpriteBatch.DrawString(font, Text, Position - _baseOrigin * _scale + Vector2.One, Color.DarkSlateGray * Alpha * Alpha, 0, Vector2.Zero, _scale, SpriteEffects.None, 0);
-            SpriteBatch.DrawString(font, Text, Position - _baseOrigin * _scale, color, 0, Vector2.Zero, _scale, SpriteEffects.None, 0);
+			spriteBatch.DrawString(font, Text, Position - _baseOrigin * _scale + Vector2.One, Color.DarkSlateGray * Alpha * Alpha, 0, Vector2.Zero, _scale, SpriteEffects.None, 1f);
+			spriteBatch.DrawString(font, Text, Position - _baseOrigin * _scale, color, 0, Vector2.Zero, _scale, SpriteEffects.None, 1f);
 
-            SpriteBatch.End();
+			//spriteBatch.End();
         }
 
         /// <summary>

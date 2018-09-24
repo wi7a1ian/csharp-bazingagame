@@ -11,7 +11,9 @@ using FarseerPhysics;
 using FarseerPhysics.DebugView;
 using BazingaGame.Particles;
 using BazingaGame.States.Game;
-using BazingaGame.Input;
+using Microsoft.Xna.Framework.Audio;
+using Microsoft.Xna.Framework.Media;
+using GameInput;
 
 namespace BazingaGame
 {
@@ -26,33 +28,69 @@ namespace BazingaGame
         private float _displayUnitsToSimUnitsRatio = 1 / ConvertUnits.ToSimUnits(1);
         protected DebugViewXNA DebugView;
 
-
         private Camera _camera;
         private IGameState _gameState;
-        private KeyboardState _oldKeyboardState;
+        //private KeyboardState _oldKeyboardState;
 
-        public InputHelper InputHelper { get; private set; }
+        //public InputHelper InputHelper { get; private set; }
         public Camera Camera { get { return _camera; } }
+
+        public Song BackgroundSong { get; set; }
+
+		private InputHelper _gameInput;
 
         public BazingaGame()
         {
             graphics = new GraphicsDeviceManager(this);
 
-            graphics.PreferredBackBufferWidth = 1920 - 20;
-            graphics.PreferredBackBufferHeight = 1080 - 80;
+			graphics.PreferredBackBufferWidth = GetGameWidthInPixels();
+			graphics.PreferredBackBufferHeight = GetGameHeightInPixels();
 
             //graphics.PreferredBackBufferWidth = 1920;
             //graphics.PreferredBackBufferHeight = 1080;
-            //graphics.IsFullScreen = true;
+#if DEBUG
+            graphics.IsFullScreen = false;
+#else
+			graphics.IsFullScreen = true;
+#endif
             Content.RootDirectory = "Content";
 
-            _gameState = new SplashScreenState(this);
+#if DEBUG
+			_gameState = new MainMenuState(this);
+#else
+			_gameState = new SplashScreenState(this);
+#endif
 
-            InputHelper = new InputHelper(this);
+			//InputHelper = new InputHelper(this);
+
+			_gameInput = new InputHelper(this);
 
             // Frame rate is 30 fps by default for Windows Phone.
             //TargetElapsedTime = TimeSpan.FromTicks(333333);
         }
+
+		public IGameState GetCurentGameState()
+		{
+			return _gameState;
+		}
+
+		public int GetGameWidthInPixels()
+		{
+#if DEBUG
+			return 1920 - 20;
+#else
+			return 1920;
+#endif
+		}
+
+		public int GetGameHeightInPixels()
+		{
+#if DEBUG
+			return 1080 - 80;
+#else
+			return 1080;
+#endif
+		}
 
         /// <summary>
         /// Allows the game to perform any initialization it needs to before starting to run.
@@ -64,7 +102,6 @@ namespace BazingaGame
         {
             _camera = new Camera(GraphicsDevice.Viewport);
             Settings.MaxPolygonVertices = 12;
-
             //Camera.SetPlayerToFollow(_gamePlayer);
 
             //_gameState = new GameMapState(this);
@@ -83,6 +120,7 @@ namespace BazingaGame
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
+            // Utils - Debug View
             if (DebugView == null)
             {
                 DebugView = new DebugViewXNA(World);
@@ -112,37 +150,39 @@ namespace BazingaGame
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
-            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
-                Exit();
+			_gameInput.Update(gameTime);
+
+			if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || _gameInput.IsNewKeyPress(Keys.Escape))
+				Exit();
 
             var keyboardState = Keyboard.GetState();
 
-            Camera.Update(gameTime, keyboardState);
+			Camera.Update(gameTime, _gameInput);
 
-            if (keyboardState.IsKeyDown(Keys.F1) && !_oldKeyboardState.IsKeyDown(Keys.F1))
+			if (_gameInput.IsNewKeyPress(Keys.F1))
                 EnableOrDisableFlag(DebugViewFlags.Shape);
-            if (keyboardState.IsKeyDown(Keys.F2) && !_oldKeyboardState.IsKeyDown(Keys.F2))
+			if (_gameInput.IsNewKeyPress(Keys.F2))
             {
                 EnableOrDisableFlag(DebugViewFlags.DebugPanel);
                 EnableOrDisableFlag(DebugViewFlags.PerformanceGraph);
             }
-            if (keyboardState.IsKeyDown(Keys.F3) && !_oldKeyboardState.IsKeyDown(Keys.F3))
+			if (_gameInput.IsNewKeyPress(Keys.F3))
                 EnableOrDisableFlag(DebugViewFlags.Joint);
-            if (keyboardState.IsKeyDown(Keys.F4) && !_oldKeyboardState.IsKeyDown(Keys.F4))
+			if (_gameInput.IsNewKeyPress(Keys.F4))
             {
                 EnableOrDisableFlag(DebugViewFlags.ContactPoints);
                 EnableOrDisableFlag(DebugViewFlags.ContactNormals);
             }
-            if (keyboardState.IsKeyDown(Keys.F5) && !_oldKeyboardState.IsKeyDown(Keys.F5))
+			if (_gameInput.IsNewKeyPress(Keys.F5))
                 EnableOrDisableFlag(DebugViewFlags.PolygonPoints);
-            if (keyboardState.IsKeyDown(Keys.F6) && !_oldKeyboardState.IsKeyDown(Keys.F6))
+			if (_gameInput.IsNewKeyPress(Keys.F6))
                 EnableOrDisableFlag(DebugViewFlags.Controllers);
-            if (keyboardState.IsKeyDown(Keys.F7) && !_oldKeyboardState.IsKeyDown(Keys.F7))
+			if (_gameInput.IsNewKeyPress(Keys.F7))
                 EnableOrDisableFlag(DebugViewFlags.CenterOfMass);
-            if (keyboardState.IsKeyDown(Keys.F8) && !_oldKeyboardState.IsKeyDown(Keys.F8))
+			if (_gameInput.IsNewKeyPress(Keys.F8))
                 EnableOrDisableFlag(DebugViewFlags.AABB);
 
-            var _newGameState = _gameState.Update(gameTime);
+			var _newGameState = _gameState.Update(gameTime, _gameInput);
 
             if (_newGameState != null && _newGameState != _gameState)
             {
@@ -153,8 +193,6 @@ namespace BazingaGame
             }
 
             base.Update(gameTime);
-
-            _oldKeyboardState = keyboardState;
         }
 
         private void EnableOrDisableFlag(DebugViewFlags flag)
@@ -173,11 +211,11 @@ namespace BazingaGame
         {
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
-            _gameState.Draw(gameTime);
-
             base.Draw(gameTime);
 
             spriteBatch.Begin();
+
+			_gameState.Draw(gameTime, spriteBatch);
 
             Matrix projection = Matrix.CreateOrthographicOffCenter(
                 0f, 

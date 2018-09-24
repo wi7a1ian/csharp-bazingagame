@@ -12,42 +12,26 @@ using BazingaGame.GameMap;
 using BazingaGame.Display;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.IO;
+using BazingaGame.Prefabs;
+using MapFileModel;
 
 namespace BazingaGame.GameMap
 {
-    public class Map : GameObject
+    public class Map : StatelessGameComponent
     {
         //private BazingaGame _game;
         private MapTileInfo[][] _mapTiles;
+        private List<DecorationInfo> _mapDecorations;
+
+        private List<Tuple<MapDecorationTileType, Texture2D>> _mapDecorationTiles;
         //private Map _map;
         private Texture2D MapSprite;
         private Texture2D BackgroundSprite;
         private SpriteBatch _spriteBatch;
 
         public const int TileSize = 128;
-        public const int MapWidth = 30;
-        public const int MapHeight = 16;
-
-        private enum MapSpriteTile
-        {
-            PlatformLeftEdge,
-            PlatformMiddle,
-            PlatformRightEdge,
-            GroundMiddle,
-            GroundLeftEdge,
-            GroundRightEdge,
-            GroundLeftEnd,
-            GroundRightEnd,
-            GroundLeftInnerCorner,
-            GroundRightInnerCorner,
-            GroundLeft,
-            GroundRight,
-            GroundBottom,
-            Ground,
-            GroundLeftoOuterCorner,
-            GroundRightOuterCorner,
-            None
-        }
+        public const int MapWidth = 200;
+        public const int MapHeight = 100;
 
         private struct MapTileInfo
         {
@@ -60,15 +44,29 @@ namespace BazingaGame.GameMap
         public Map(BazingaGame game)
             :base(game)
         {
-
+            _mapDecorationTiles = new List<Tuple<MapDecorationTileType, Texture2D>>();
         }
 
         protected override void LoadContent()
         {
             _spriteBatch = new SpriteBatch(this.Game.GraphicsDevice);
 
-            MapSprite = this.Game.Content.Load<Texture2D>("MapSprite");
-            BackgroundSprite = this.Game.Content.Load<Texture2D>("Background");
+            MapSprite = Game.Content.Load<Texture2D>("MapSprite");
+            BackgroundSprite = Game.Content.Load<Texture2D>("Background");
+
+            _mapDecorationTiles.Add(new Tuple<MapDecorationTileType, Texture2D>(MapDecorationTileType.Bush1, Game.Content.Load<Texture2D>("MapObjects/Bush (1)")));
+            _mapDecorationTiles.Add(new Tuple<MapDecorationTileType, Texture2D>(MapDecorationTileType.Bush2, Game.Content.Load<Texture2D>("MapObjects/Bush (2)")));
+            _mapDecorationTiles.Add(new Tuple<MapDecorationTileType, Texture2D>(MapDecorationTileType.Cactus1, Game.Content.Load<Texture2D>("MapObjects/Cactus (1)")));
+            _mapDecorationTiles.Add(new Tuple<MapDecorationTileType, Texture2D>(MapDecorationTileType.Cactus2, Game.Content.Load<Texture2D>("MapObjects/Cactus (2)")));
+            _mapDecorationTiles.Add(new Tuple<MapDecorationTileType, Texture2D>(MapDecorationTileType.Cactus3, Game.Content.Load<Texture2D>("MapObjects/Cactus (3)")));
+            _mapDecorationTiles.Add(new Tuple<MapDecorationTileType, Texture2D>(MapDecorationTileType.Grass1, Game.Content.Load<Texture2D>("MapObjects/Grass (1)")));
+            _mapDecorationTiles.Add(new Tuple<MapDecorationTileType, Texture2D>(MapDecorationTileType.Grass2, Game.Content.Load<Texture2D>("MapObjects/Grass (2)")));
+            _mapDecorationTiles.Add(new Tuple<MapDecorationTileType, Texture2D>(MapDecorationTileType.Sign, Game.Content.Load<Texture2D>("MapObjects/Sign")));
+            _mapDecorationTiles.Add(new Tuple<MapDecorationTileType, Texture2D>(MapDecorationTileType.SignArrow, Game.Content.Load<Texture2D>("MapObjects/SignArrow")));
+            _mapDecorationTiles.Add(new Tuple<MapDecorationTileType, Texture2D>(MapDecorationTileType.Skeleton, Game.Content.Load<Texture2D>("MapObjects/Skeleton")));
+            _mapDecorationTiles.Add(new Tuple<MapDecorationTileType, Texture2D>(MapDecorationTileType.Stone, Game.Content.Load<Texture2D>("MapObjects/Stone")));
+            _mapDecorationTiles.Add(new Tuple<MapDecorationTileType, Texture2D>(MapDecorationTileType.StoneBlock, Game.Content.Load<Texture2D>("MapObjects/StoneBlock")));
+            _mapDecorationTiles.Add(new Tuple<MapDecorationTileType, Texture2D>(MapDecorationTileType.Tree, Game.Content.Load<Texture2D>("MapObjects/Tree")));
 
             base.LoadContent();
         }
@@ -90,12 +88,44 @@ namespace BazingaGame.GameMap
                 }
             }
 
-            CreateSampleMap();
+            LoadMap("Map\\Levels\\first.baz");
 
             CreateBodies(Game as BazingaGame);
 
             base.Initialize();
         }
+
+		private void LoadMap(string mapFileName)
+		{
+			var serializer = new BinaryFormatter();
+
+			// read whole map info
+			var mapFileInfo = new MapFileInfo();
+			using (var stream = File.OpenRead(mapFileName))
+			{
+				mapFileInfo = (MapFileInfo)serializer.Deserialize(stream);
+			}
+
+			// create array of tiles
+			MapSpriteTile[][] mapSpriteTiles = new MapSpriteTile[MapWidth][];
+			for (int i = 0; i < _mapTiles.Length; i++)
+            {
+                mapSpriteTiles[i] = new MapSpriteTile[MapHeight];
+            }
+			// map readed from map info ground/none tiles to sprite tiles
+			MapModel.MapTilesToSprites(mapFileInfo.TileType, mapSpriteTiles);
+
+            _mapDecorations = mapFileInfo.Decorations;
+
+            // assign mapped sprite tile to _mapTiles.TileSprite
+            for (int i = 0; i < _mapTiles.Length; i++)
+			{
+				for (int j = 0; j < _mapTiles[0].Length; j++)
+				{
+					_mapTiles[i][j].TileSprite = mapSpriteTiles[i][j];
+				}
+			}
+		}
 
         private void CreateBodies(BazingaGame game)
         {
@@ -112,7 +142,7 @@ namespace BazingaGame.GameMap
                         _mapTiles[i][j].Body.Position = ConvertUnits.ToSimUnits((i) * TileSize + TileSize / 2f, (j) * TileSize + TileSize / 2f);
                         _mapTiles[i][j].Body.Friction = 1f;
                         _mapTiles[i][j].Body.Restitution = 0f;
-                        _mapTiles[i][j].Body.CollisionCategories = Category.Cat2;
+                        _mapTiles[i][j].Body.CollisionCategories = BazingaCollisionGroups.Ground;
                         _mapTiles[i][j].Body.CollidesWith = Category.All;
                     }
                     else
@@ -177,6 +207,12 @@ namespace BazingaGame.GameMap
                             0.1f);
                     }
                 }
+            }
+
+            foreach (var decoration in _mapDecorations)
+            {
+                var texture = _mapDecorationTiles.Where(p => p.Item1 == decoration.DecorationType).First().Item2;
+                _spriteBatch.Draw(texture, new Vector2(decoration.X, decoration.Y), Color.White);
             }
 
             _spriteBatch.End();

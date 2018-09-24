@@ -2,23 +2,31 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using BazingaGame.Input;
+using BazingaGame.States.Game;
+using GameInput;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 
 namespace BazingaGame.UI
 {
-    public class Menu: GameObject
+	public class Menu : SimpleGameObject
     {
         public Menu(BazingaGame game, string menuTitle)
             :base(game)
         {
             _menuTitle = menuTitle;
+            _selectedEntry = 0;
 
             //TransitionOnTime = TimeSpan.FromSeconds(0.7);
             //TransitionOffTime = TimeSpan.FromSeconds(0.7);
             //HasCursor = true;
+
+			_backgroundOffset = -100;
         }
+
+		public Texture2D LogoSprite { get; private set; }
+		private Texture2D BackgroundSprite;
 
         private const float NumEntries = 15;
         //private const float NumEntries = 9;
@@ -33,15 +41,19 @@ namespace BazingaGame.UI
         private float _menuOffset;
         private float _maxOffset;
 
+		private int _backgroundOffset;
+
         //private Texture2D _texScrollButton;
         //private Texture2D _texSlider;
 
-        private MenuButton _scrollUp;
-        private MenuButton _scrollDown;
-        private MenuButton _scrollSlider;
-        private bool _scrollLock;
+		//private MenuButton _scrollUp;
+		//private MenuButton _scrollDown;
+		//private MenuButton _scrollSlider;
+        //private bool _scrollLock;
 
         public SpriteFont FontMenu { get; private set; }
+
+		private Type _nextGameState;
 
         /// <summary>
         /// Gets the current position of the screen transition, ranging
@@ -53,13 +65,21 @@ namespace BazingaGame.UI
         public void AddMenuItem(string name, EntryType type)
         {
             MenuEntry entry = new MenuEntry(Game, this, name, type);
-            Game.Components.Add(entry);
+            //Game.Components.Add(entry);
             _menuEntries.Add(entry);
         }
 
-        protected override void LoadContent()
+		public void AddStateMenuItem(string name, Type nextGameState)
+		{
+			_nextGameState = nextGameState;
+			MenuEntry entry = new MenuEntry(Game, this, name, EntryType.State, nextGameState);
+			//Game.Components.Add(entry);
+			_menuEntries.Add(entry);			
+		}
+
+        public void LoadContent()
         {
-            base.LoadContent();
+            //base.LoadContent();
 
             FontMenu = Game.Content.Load<SpriteFont>("MenuFont");
 
@@ -69,13 +89,13 @@ namespace BazingaGame.UI
             //_texScrollButton = ScreenManager.Content.Load<Texture2D>("Common/arrow");
             //_texSlider = ScreenManager.Content.Load<Texture2D>("Common/slider");
 
-            float scrollBarPos = viewport.Width / 2f;
+            //float scrollBarPos = viewport.Width / 2f;
             for (int i = 0; i < _menuEntries.Count; ++i)
             {
                 _menuEntries[i].Initialize();
-                scrollBarPos = Math.Min(scrollBarPos,
-                                         (viewport.Width - _menuEntries[i].GetWidth()) / 2f);
+                //scrollBarPos = Math.Min(scrollBarPos, (viewport.Width - _menuEntries[i].GetWidth()) / 2f);
             }
+
             //scrollBarPos -= _texScrollButton.Width + 2f;
 
             _titleOrigin = font.MeasureString(_menuTitle) / 2f;
@@ -85,36 +105,50 @@ namespace BazingaGame.UI
             _menuBorderTop = (viewport.Height - _menuBorderMargin * (NumEntries - 1)) / 2f;
             _menuBorderBottom = (viewport.Height + _menuBorderMargin * (NumEntries - 1)) / 2f;
 
-            _menuOffset = 0f;
+            _menuOffset = 500f;
             _maxOffset = Math.Max(0f, (_menuEntries.Count - NumEntries) * _menuBorderMargin);
+
+			LogoSprite = Game.Content.Load<Texture2D>("Menu/Logo");
+			BackgroundSprite = Game.Content.Load<Texture2D>("Background");
 
             //_scrollUp = new MenuButton(_texScrollButton, false, new Vector2(scrollBarPos, _menuBorderTop - _texScrollButton.Height), this);
             //_scrollDown = new MenuButton(_texScrollButton, true, new Vector2(scrollBarPos, _menuBorderBottom + _texScrollButton.Height), this);
             //_scrollSlider = new MenuButton(_texSlider, false, new Vector2(scrollBarPos, _menuBorderTop), this);
 
-            _scrollLock = false;
+            //_scrollLock = false;
         }
 
-        /// <summary>
-        /// Returns the index of the menu entry at the position of the given mouse state.
-        /// </summary>
-        /// <returns>Index of menu entry if valid, -1 otherwise</returns>
-        private int GetMenuEntryAt(Vector2 position)
-        {
-            int index = 0;
-            foreach (MenuEntry entry in _menuEntries)
-            {
-                float width = entry.GetWidth();
-                float height = entry.GetHeight();
-                Rectangle rect = new Rectangle((int)(entry.Position.X - width / 2f), (int)(entry.Position.Y - height / 2f), (int)width, (int)height);
+		//public override void UnloadContent()
+		//{
+		//	for (int i = 0; i < _menuEntries.Count; ++i)
+		//	{
+		//		Game.Components.Remove(_menuEntries[i]);
+		//		//scrollBarPos = Math.Min(scrollBarPos, (viewport.Width - _menuEntries[i].GetWidth()) / 2f);
+		//	}
 
-                if (rect.Contains((int)position.X, (int)position.Y) && entry.Alpha > 0.1f)
-                    return index;
+		//	//base.UnloadContent();
+		//}
 
-                ++index;
-            }
-            return -1;
-        }
+        ///// <summary>
+        ///// Returns the index of the menu entry at the position of the given mouse state.
+        ///// </summary>
+        ///// <returns>Index of menu entry if valid, -1 otherwise</returns>
+        //private int GetMenuEntryAt(Vector2 position)
+        //{
+        //    int index = 0;
+        //    foreach (MenuEntry entry in _menuEntries)
+        //    {
+        //        float width = entry.GetWidth();
+        //        float height = entry.GetHeight();
+        //        Rectangle rect = new Rectangle((int)(entry.Position.X - width / 2f), (int)(entry.Position.Y - height / 2f), (int)width, (int)height);
+
+        //        if (rect.Contains((int)position.X, (int)position.Y) && entry.Alpha > 0.1f)
+        //            return index;
+
+        //        ++index;
+        //    }
+        //    return -1;
+        //}
 
         /// <summary>
         /// Responds to user input, changing the selected entry and accepting
@@ -123,25 +157,25 @@ namespace BazingaGame.UI
         public void HandleInput(InputHelper input, GameTime gameTime)
         {
             // Mouse or touch on a menu item
-            int hoverIndex = GetMenuEntryAt(input.Cursor);
-            if (hoverIndex > -1 && _menuEntries[hoverIndex].IsSelectable() && !_scrollLock)
-                _selectedEntry = hoverIndex;
-            else
-                _selectedEntry = -1;
+            //int hoverIndex = GetMenuEntryAt(input.Cursor);
+            //if (hoverIndex > -1 && _menuEntries[hoverIndex].IsSelectable() && !_scrollLock)
+            //    _selectedEntry = hoverIndex;
+            //else
+            //    _selectedEntry = -1;
 
-            _scrollSlider.Hover = false;
-            if (input.IsCursorValid)
-            {
-                _scrollUp.Collide(input.Cursor);
-                _scrollDown.Collide(input.Cursor);
-                _scrollSlider.Collide(input.Cursor);
-            }
-            else
-            {
-                _scrollUp.Hover = false;
-                _scrollDown.Hover = false;
-                _scrollLock = false;
-            }
+			//_scrollSlider.Hover = false;
+			//if (input.IsCursorValid)
+			//{
+			//	_scrollUp.Collide(input.Cursor);
+			//	_scrollDown.Collide(input.Cursor);
+			//	_scrollSlider.Collide(input.Cursor);
+			//}
+			//else
+			//{
+			//	_scrollUp.Hover = false;
+			//	_scrollDown.Hover = false;
+			//	//_scrollLock = false;
+			//}
 
             // Accept or cancel the menu? 
             if (input.IsMenuSelect() && _selectedEntry != -1)
@@ -162,31 +196,41 @@ namespace BazingaGame.UI
             else if (input.IsMenuCancel())
                 Game.Exit();
 
-            if (input.IsMenuPressed())
+            //if (input.IsMenuPressed())
+            //{
+            //    if (_scrollUp.Hover)
+            //    {
+            //        _menuOffset = Math.Max(_menuOffset - 200f * (float)gameTime.ElapsedGameTime.TotalSeconds, 0f);
+            //        _scrollLock = false;
+            //    }
+            //    if (_scrollDown.Hover)
+            //    {
+            //        _menuOffset = Math.Min(_menuOffset + 200f * (float)gameTime.ElapsedGameTime.TotalSeconds, _maxOffset);
+            //        _scrollLock = false;
+            //    }
+            //    if (_scrollSlider.Hover)
+            //    {
+            //        _scrollLock = true;
+            //    }
+            //}
+
+            //if (input.IsMenuReleased())
+            //    _scrollLock = false;
+
+            //if (_scrollLock)
+            //{
+            //    _scrollSlider.Hover = true;
+            //    _menuOffset = Math.Max(Math.Min(((input.Cursor.Y - _menuBorderTop) / (_menuBorderBottom - _menuBorderTop)) * _maxOffset, _maxOffset), 0f);
+            //}
+
+            if(input.KeyboardState.GetPressedKeys().Contains(Keys.Down))
             {
-                if (_scrollUp.Hover)
-                {
-                    _menuOffset = Math.Max(_menuOffset - 200f * (float)gameTime.ElapsedGameTime.TotalSeconds, 0f);
-                    _scrollLock = false;
-                }
-                if (_scrollDown.Hover)
-                {
-                    _menuOffset = Math.Min(_menuOffset + 200f * (float)gameTime.ElapsedGameTime.TotalSeconds, _maxOffset);
-                    _scrollLock = false;
-                }
-                if (_scrollSlider.Hover)
-                {
-                    _scrollLock = true;
-                }
+                _selectedEntry++;
             }
 
-            if (input.IsMenuReleased())
-                _scrollLock = false;
-
-            if (_scrollLock)
+            if (input.KeyboardState.GetPressedKeys().Contains(Keys.Up))
             {
-                _scrollSlider.Hover = true;
-                _menuOffset = Math.Max(Math.Min(((input.Cursor.Y - _menuBorderTop) / (_menuBorderBottom - _menuBorderTop)) * _maxOffset, _maxOffset), 0f);
+                _selectedEntry--;
             }
         }
 
@@ -202,7 +246,7 @@ namespace BazingaGame.UI
             float transitionOffset = (float)Math.Pow(TransitionPosition, 2);
 
             Vector2 position = Vector2.Zero;
-            position.Y = _menuBorderTop - _menuOffset;
+            position.Y = _menuBorderTop + _menuOffset;
 
             // update each menu entry's location in turn
             for (int i = 0; i < _menuEntries.Count; ++i)
@@ -234,51 +278,86 @@ namespace BazingaGame.UI
         /// <summary>
         /// Updates the menu.
         /// </summary>
-        public override void Update(GameTime gameTime)
+		public IGameState Update(GameTime gameTime, InputHelper gameInput)
         {
-            base.Update(gameTime);
+            //base.Update(gameTime);
+
+			IGameState returnedGameState = null;
+
+			if (gameInput.IsNewKeyPress(Keys.W) || gameInput.IsNewKeyPress(Keys.Up))
+			{
+				if(_selectedEntry > 0)
+				{
+					_selectedEntry--;
+				}
+			}
+
+			if (gameInput.IsNewKeyPress(Keys.S) || gameInput.IsNewKeyPress(Keys.Down))
+			{
+				if (_selectedEntry < _menuEntries.Count - 1)
+				{
+					_selectedEntry++;
+				}
+			}
 
             // Update each nested MenuEntry object.
             for (int i = 0; i < _menuEntries.Count; ++i)
             {
                 bool isSelected = (i == _selectedEntry);
-                _menuEntries[i].Update(isSelected, gameTime);
+				var entryGameState = _menuEntries[i].Update(isSelected, gameTime, gameInput);
+
+				if (entryGameState != null)
+				{
+					returnedGameState = entryGameState;
+				}
             }
+
+			_backgroundOffset++;
 
             //_scrollUp.Update(gameTime);
             //_scrollDown.Update(gameTime);
             //_scrollSlider.Update(gameTime);
+
+			return returnedGameState;
         }
 
         /// <summary>
         /// Draws the menu.
         /// </summary>
-        public override void Draw(GameTime gameTime)
+		public void Draw(GameTime gameTime, SpriteBatch spriteBatch)
         {
             // make sure our entries are in the right place before we draw them
             UpdateMenuEntryLocations();
 
-            SpriteBatch spriteBatch = SpriteBatch;
+            //SpriteBatch spriteBatch = SpriteBatch;
             SpriteFont font = FontMenu;
 
-            spriteBatch.Begin();
-            // Draw each menu entry in turn.
-            for (int i = 0; i < _menuEntries.Count; ++i)
-            {
-                _menuEntries[i].Draw();
-            }
+            //spriteBatch.Begin();
+
+			spriteBatch.Draw(BackgroundSprite, new Vector2(), new Rectangle(0, -_backgroundOffset, 1920, 1080), Color.White, 0f, new Vector2(), 1f, SpriteEffects.None, 0f);
+
+			spriteBatch.Draw(LogoSprite, new Vector2((Game.GetGameWidthInPixels() - LogoSprite.Width) / 2, 40), Color.White);
 
             // Make the menu slide into place during transitions, using a
             // power curve to make things look more interesting (this makes
             // the movement slow down as it nears the end).
             Vector2 transitionOffset = new Vector2(0f, (float)Math.Pow(TransitionPosition, 2) * 100f);
 
-            spriteBatch.DrawString(font, _menuTitle, _titlePosition - transitionOffset + Vector2.One * 2f, Color.Black, 0, _titleOrigin, 1f, SpriteEffects.None, 0);
-            spriteBatch.DrawString(font, _menuTitle, _titlePosition - transitionOffset, new Color(255, 210, 0), 0, _titleOrigin, 1f, SpriteEffects.None, 0);
+            spriteBatch.DrawString(font, _menuTitle, _titlePosition - transitionOffset + Vector2.One * 2f, Color.Black, 0, _titleOrigin, 1f, SpriteEffects.None, 10f);
+            spriteBatch.DrawString(font, _menuTitle, _titlePosition - transitionOffset, new Color(255, 210, 0), 0, _titleOrigin, 1f, SpriteEffects.None, 10f);
+
+			// Draw each menu entry in turn.
+			for (int i = 0; i < _menuEntries.Count; ++i)
+			{
+				_menuEntries[i].Draw(spriteBatch);
+			}
+			
             //_scrollUp.Draw();
             //_scrollSlider.Draw();
             //_scrollDown.Draw();
-            spriteBatch.End();
+            //spriteBatch.End();
+
+			
         }
     }
 }

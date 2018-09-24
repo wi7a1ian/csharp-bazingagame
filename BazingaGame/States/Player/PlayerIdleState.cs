@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using BazingaGame.Sounds;
 
 namespace BazingaGame.States.Player
 {
@@ -17,20 +18,22 @@ namespace BazingaGame.States.Player
     /// Finite State Mchine Pattern
     /// http://gameprogrammingpatterns.com/state.html
     /// </summary>
-    public class PlayerIdleState : IPlayerState
+    public class PlayerIdleState : IGameComponentState
     {
         private const int FixtureRadiusX = 31;
         private const int FixtureRadiusY = 65;
         private readonly Vector2 FixtureOffset = new Vector2(-9, 0);
+        private BazingaPlayer player;
 
-        public void Enter(BazingaPlayer player)
+        public void EnterState(StatefulGameComponent target)
         {
+            this.player = target as BazingaPlayer;
             var offset = FixtureOffset * new Vector2(player.Animation.IsFlippedHorizontally ? -1 : 1, 1);
             player.SetBodyFixture(FixtureRadiusX, FixtureRadiusY, offset);
             player.Animation.PlaySprite(SpriteState.Idle, true);
         }
 
-        public IPlayerState HandleInput(BazingaPlayer player, KeyboardState input)
+        public IGameComponentState HandleInput(KeyboardState input)
         {
             
             if (input.IsKeyDown(Keys.Right) || input.IsKeyDown(Keys.Left))
@@ -51,7 +54,7 @@ namespace BazingaGame.States.Player
             }
         }
 
-        public IPlayerState Update(BazingaPlayer player, GameTime gameTime)
+        public IGameComponentState Update(GameTime gameTime)
         {
             float xForce = 0;
             float yForce = 0;
@@ -62,7 +65,7 @@ namespace BazingaGame.States.Player
             return null;
         }
 
-        public void Exit(BazingaPlayer player)
+        public void ExitState()
         {
             // Nop
         }

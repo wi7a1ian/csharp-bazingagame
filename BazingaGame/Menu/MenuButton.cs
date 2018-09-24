@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using BazingaGame.Prefabs;
 
 namespace BazingaGame.UI
 {
@@ -13,7 +14,7 @@ namespace BazingaGame.UI
     /// entries in different ways. This also provides an event that will be raised
     /// when the menu entry is selected.
     /// </summary>
-    public sealed class MenuButton: GameObject
+    public sealed class MenuButton: StatelessGameComponent
     {
         private Vector2 _baseOrigin;
         private bool _flip;

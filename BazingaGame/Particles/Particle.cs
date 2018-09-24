@@ -7,10 +7,11 @@ using FarseerPhysics.Dynamics;
 using FarseerPhysics.Factories;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using BazingaGame.Prefabs;
 
 namespace BazingaGame.Particles
 {
-    public class Particle: GameObject
+    public class Particle: StatelessGameComponent
     {
         public Texture2D Texture { get; set; }
         public Vector2 Position { get; set; }

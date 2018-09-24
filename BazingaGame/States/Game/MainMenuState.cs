@@ -4,43 +4,59 @@ using System.Linq;
 using System.Text;
 using Microsoft.Xna.Framework;
 using BazingaGame.UI;
+using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
+using Microsoft.Xna.Framework.Media;
+using GameInput;
 
 namespace BazingaGame.States.Game
 {
-    class MainMenuState : IGameState
+	class MainMenuState : SimpleGameObject, IGameState
     {
-        private BazingaGame Game;
         private Menu _menu;
+		//private IGameState _newGameState;
 
         public MainMenuState(BazingaGame game)
+			:base(game)
         {
-            Game = game;
         }
 
-        public void Draw(GameTime gameTime)
+		public void Draw(GameTime gameTime, SpriteBatch spriteBatch)
         {
-
+			_menu.Draw(gameTime, spriteBatch);
         }
 
-        public IGameState Update(GameTime gameTime)
+		public IGameState Update(GameTime gameTime, InputHelper _gameInput)
         {
-            return null;
+			var returnedGameState = _menu.Update(gameTime, _gameInput	);
+
+			return returnedGameState;
         }
 
-        public void LoadContent()
+		public void LoadContent()
         {
-
+			_menu.LoadContent();
         }
 
-        public void Initialize()
+		public void Initialize()
         {
-            _menu = new Menu(Game, "Bazinga Game");
-
-            _menu.AddMenuItem("Start", EntryType.Separator);
-
+            _menu = new Menu(Game, "");
+            _menu.AddStateMenuItem("Start", typeof(GameMapState));
+			_menu.AddStateMenuItem("Options", typeof(OptionsState));
             _menu.AddMenuItem("Exit", EntryType.ExitItem);
 
-            Game.Components.Add(_menu);
+            // Audio
+#if DEBUG
+			//Game.BackgroundSong = Game.Content.Load<Song>(@"Sounds\Main");
+			//MediaPlayer.Play(Game.BackgroundSong);
+			//MediaPlayer.IsRepeating = true;
+			//MediaPlayer.Volume = 0.5f;
+#else
+			Game.BackgroundSong = Game.Content.Load<Song>(@"Sounds\Main");
+			MediaPlayer.Play(Game.BackgroundSong);
+			MediaPlayer.IsRepeating = true;
+			MediaPlayer.Volume = 0.5f;
+#endif
         }
-    }
+	}
 }

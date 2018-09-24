@@ -10,16 +10,20 @@ using System.Text;
 using FarseerPhysics.Factories;
 using FarseerPhysics;
 using BazingaGame.Display;
+using BazingaGame.States;
+using BazingaGame.States.CrateStates;
 
-namespace BazingaGame.Prefabs
+namespace BazingaGame.Prefabs.Dynamic
 {
-    public sealed class Box : GameObject
+    public sealed class Crate : StatefulGameComponent
     {
 
         private float _scale = 1f;
         
         private float _initialX;
         private float _initialY;
+
+        
 
         public Body Body { get; private set; }
         public Vector2 Origin { get; private set; }
@@ -35,7 +39,7 @@ namespace BazingaGame.Prefabs
             get { return Body.Position.Y; }
         }
 
-        public Box(BazingaGame game, float initialX, float initialY)
+        public Crate(BazingaGame game, float initialX, float initialY)
             : base(game)
         {
             // Nop
@@ -46,6 +50,7 @@ namespace BazingaGame.Prefabs
 
         public override void Initialize()
         {
+            State = new CrateSolidState();
             base.Initialize();
         }
 
@@ -53,13 +58,7 @@ namespace BazingaGame.Prefabs
         {
             Texture = Game.Content.Load<Texture2D>("MapObjects/Crate");
             Origin = new Vector2(Texture.Width / 2f, Texture.Height / 2f);
-
-            Body = BodyFactory.CreateRectangle((Game as BazingaGame).World, ConvertUnits.ToSimUnits(Texture.Width), ConvertUnits.ToSimUnits(Texture.Height), 1f);
-            Body.BodyType = BodyType.Dynamic;
-            Body.Position = ConvertUnits.ToSimUnits(_initialX, _initialY);
-            Body.Restitution = 0f;
-            Body.CollisionCategories = Category.Cat3;
-            Body.CollidesWith = Category.All;
+            State.EnterState(this);
 
             base.LoadContent();
         }
@@ -73,5 +72,21 @@ namespace BazingaGame.Prefabs
             base.Draw(gameTime);
         }
 
+        public void SetDefaultBodyFixture()
+        {
+            Body = BodyFactory.CreateRectangle(Game.World, ConvertUnits.ToSimUnits(Texture.Width), ConvertUnits.ToSimUnits(Texture.Height), 1f);
+            Body.BodyType = BodyType.Dynamic;
+            Body.Position = ConvertUnits.ToSimUnits(_initialX, _initialY);
+            Body.Restitution = 0f;
+            Body.CollisionCategories = BazingaCollisionGroups.Box;
+            Body.CollidesWith = Category.All;
+        }
+
+        public void Destroy()
+        {
+            Game.World.RemoveBody(Body);
+            Game.Components.Remove(this);
+            Texture.Dispose();
+        }
     }
 }

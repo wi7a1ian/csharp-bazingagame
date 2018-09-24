@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using BazingaGame.Prefabs;
 using FarseerPhysics;
+using GameInput;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -89,28 +90,28 @@ namespace BazingaGame.Display
         //    return Matrix.CreateTranslation(-ConvertUnits.ToSimUnits(_position.X), -ConvertUnits.ToSimUnits(_position.Y), 0);
         //}
 
-        public void Update(GameTime gameTime, KeyboardState keyboardState)
+		public void Update(GameTime gameTime, InputHelper gameInput)
         {
             if (_playerToFollow == null)
             {
-                if (keyboardState.IsKeyDown(Keys.D))
+				if (gameInput.KeyboardState.IsKeyDown(Keys.D))
                 {
-                    _position.X += 10;
+                    _position.X += 30;
                 }
 
-                if (keyboardState.IsKeyDown(Keys.A))
+				if (gameInput.KeyboardState.IsKeyDown(Keys.A))
                 {
-                    _position.X -= 10;
+                    _position.X -= 30;
                 }
 
-                if (keyboardState.IsKeyDown(Keys.W))
+				if (gameInput.KeyboardState.IsKeyDown(Keys.W))
                 {
-                    _position.Y -= 10;
+                    _position.Y -= 30;
                 }
 
-                if (keyboardState.IsKeyDown(Keys.S))
+				if (gameInput.KeyboardState.IsKeyDown(Keys.S))
                 {
-                    _position.Y += 10;
+                    _position.Y += 30;
                 }
             }
             else

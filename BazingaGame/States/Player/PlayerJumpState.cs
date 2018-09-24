@@ -1,5 +1,6 @@
 ﻿using BazingaGame.Animations;
 using BazingaGame.Prefabs;
+using BazingaGame.Sounds;
 using FarseerPhysics.Dynamics;
 using FarseerPhysics.Dynamics.Contacts;
 using Microsoft.Xna.Framework;
@@ -11,62 +12,106 @@ using System.Text;
 
 namespace BazingaGame.States.Player
 {
-    class PlayerJumpState : IPlayerState
+    class PlayerJumpState : IGameComponentState
     {
         private const int FixtureRadiusX = 31;
         private const int FixtureRadiusY = 65;
         private const float JumpYForce = -3.1f;
         private const float JumpXForce = -90f;
+        private const float AirWalkXForce = 0.1f;
+        private const float MaxXVelocity = 1.0f;
         private readonly Vector2 FixtureOffset = new Vector2(-6, -3);
-        private TimeSpan _lastJumpTime = TimeSpan.Zero;
+        private const string SoundEffect = @"Sounds/jump";
 
-        public void Enter(BazingaPlayer player)
+        private TimeSpan lastJumpTime = TimeSpan.Zero;
+        private bool isOnTheFloor = false;
+
+        private BazingaPlayer player;
+
+        public void EnterState(StatefulGameComponent target)
         {
-            var offset = FixtureOffset * new Vector2(player.Animation.IsFlippedHorizontally ? -1 : 1, 1);
+            player = target as BazingaPlayer;
+
             var xForce = JumpXForce * (player.Animation.IsFlippedHorizontally ? -1 : 1);
 
-            player.SetBodyFixture(FixtureRadiusX, FixtureRadiusY, offset);
             player.Animation.PlaySprite(SpriteState.Jump, false);
             player.Body.ApplyLinearImpulse(new Vector2(0, JumpYForce));
 
+            UpdateBodyFixture(player, player.Animation.IsFlippedHorizontally);
+
             if(Math.Abs(player.Body.LinearVelocity.X) >= 1)
                 player.Body.ApplyForce(new Vector2(xForce, 0));
+
+            player.Sounds.PlaySound(SoundEffect, false);
         }
 
-        public IPlayerState HandleInput(BazingaPlayer player, KeyboardState input)
+        public IGameComponentState HandleInput(KeyboardState input)
         {
+            if (input.IsKeyDown(Keys.Right))
+            {
+                if (player.Body.LinearVelocity.X < MaxXVelocity)
+                {
+                    UpdateBodyFixture(player, false);
+                    player.Body.ApplyLinearImpulse(new Vector2(AirWalkXForce, 0));
+                }
+            }
+            else if (input.IsKeyDown(Keys.Left))
+            {
+                if (player.Body.LinearVelocity.X > -MaxXVelocity)
+                {
+                    UpdateBodyFixture(player, true);
+                    player.Body.ApplyLinearImpulse(new Vector2(-AirWalkXForce, 0));
+                }
+            }
+
             return null;
         }
 
-        public IPlayerState Update(BazingaPlayer player, GameTime gameTime)
+        private void UpdateBodyFixture(BazingaPlayer player, bool flip)
         {
-            if (_lastJumpTime == TimeSpan.Zero)
+            player.Body.OnCollision -= OnGroundCollision;
+            player.Animation.FlipHorizontally(flip);
+
+            var offset = FixtureOffset * new Vector2(player.Animation.IsFlippedHorizontally ? -1 : 1, 1);
+            player.SetBodyFixture(FixtureRadiusX, FixtureRadiusY, offset);
+
+            player.Body.OnCollision += OnGroundCollision;
+        }
+
+        private bool OnGroundCollision(Fixture fixtureA, Fixture fixtureB, Contact contact)
+        {
+            bool isCollidingWithSolidObject = (fixtureB.CollisionCategories & BazingaCollisionGroups.SolidObject) > 0;
+            if (contact.IsTouching && isCollidingWithSolidObject)
             {
-                _lastJumpTime = gameTime.TotalGameTime;
+                bool isLandingFromAbove = Math.Abs(contact.Manifold.LocalNormal.Y) >= 1;
+
+                if (isLandingFromAbove)
+                {
+                    isOnTheFloor = true;
+                }
             }
 
-            // TODO: remove double jump
+            return true;
+        }
 
-            //if ((gameTime.TotalGameTime - _lastJumpTime).TotalSeconds > 0.5f
-            //        && player.Body.LinearVelocity.Y <= 0 && player.Body.LinearVelocity.Y > -0.01)
-            if (player.Body.LinearVelocity.Y <= 0 && player.Body.LinearVelocity.Y > -0.01)
+        public IGameComponentState Update(GameTime gameTime)
+        {
+            if (lastJumpTime == TimeSpan.Zero)
+            {
+                lastJumpTime = gameTime.TotalGameTime;
+            }
+
+            if (isOnTheFloor)
             {
                 return new PlayerIdleState();
-                //while (player.Body.ContactList.Next != null)
-                //{
-                //    if ((player.Body.ContactList.Contact.FixtureB.CollisionCategories & Category.Cat2) == Category.Cat2)
-                //    {
-                //        return new PlayerIdleState();
-                //    }
-                //}
             }
             
             return null;
         }
 
-        public void Exit(BazingaPlayer player)
+        public void ExitState()
         {
-            // Nop
+            player.Body.OnCollision -= OnGroundCollision;
         }
     }
 }

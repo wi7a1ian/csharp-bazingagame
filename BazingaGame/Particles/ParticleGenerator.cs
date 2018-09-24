@@ -6,10 +6,11 @@ using FarseerPhysics.Dynamics.Joints;
 using FarseerPhysics.Factories;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using BazingaGame.Prefabs;
 
 namespace BazingaGame.Particles
 {
-    public class ParticleEngine : GameObject
+    public class ParticleEngine : StatelessGameComponent
     {
         private Random random;
         public Vector2 EmitterLocation { get; set; }

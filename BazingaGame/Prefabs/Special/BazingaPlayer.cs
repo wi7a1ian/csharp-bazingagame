@@ -1,4 +1,5 @@
 ﻿using BazingaGame.Animations;
+using BazingaGame.Sounds;
 using BazingaGame.States.Player;
 using FarseerPhysics;
 using FarseerPhysics.Collision.Shapes;
@@ -18,7 +19,7 @@ namespace BazingaGame.Prefabs
     /// Finite State Mchine Pattern
     /// http://gameprogrammingpatterns.com/state.html
     /// </summary>
-    public class BazingaPlayer : GameObject
+    public class BazingaPlayer : StatefulGameComponent
     {
         public const float BodyDensity = 1.0f;
         private const int AnimationFps = 18;
@@ -28,15 +29,13 @@ namespace BazingaGame.Prefabs
             10, 10, 10, 7, 8, 3, 5
         };
 
-        private SpriteBatch _spriteBatch;
-        private IPlayerState _state;
-
         private float _initialX;
         private float _initialY;
 
         public Body Body { get; private set; }
         public Vector2 Origin { get; private set; }
         public AnimatedSprite Animation { get; private set; }
+        public SoundManager Sounds { get; private set; }
 
         public BazingaPlayer(BazingaGame game, float initialX, float initialY)
             : base(game)
@@ -48,7 +47,7 @@ namespace BazingaGame.Prefabs
 
         public override void Initialize()
         {
-            _state = new PlayerIdleState();
+            State = new PlayerIdleState();
 
             base.Initialize();
         }
@@ -56,11 +55,37 @@ namespace BazingaGame.Prefabs
         protected override void LoadContent()
         {
             Texture2D texture = this.Game.Content.Load<Texture2D>(SpriteTexture);
-
             Animation = new AnimatedSprite(texture, SpriteMap, AnimationFps);
 
             Origin = new Vector2(Animation.FrameWidth / 2f, Animation.FrameHeight / 2f);
 
+            SetDefaultBodyFixture();
+
+            Sounds = new SoundManager(this.Game.Content);
+
+            State.EnterState(this);
+
+            base.LoadContent();
+        }
+
+        public override void Update(GameTime gameTime)
+        {
+            Animation.Update(gameTime);
+
+            base.Update(gameTime);
+        }
+
+        public override void Draw(GameTime gameTime)
+        {
+            SpriteBatch.Begin(transformMatrix: Game.Camera.GetTransformMatrix());
+            Animation.Draw(SpriteBatch, ConvertUnits.ToDisplayUnits(Body.Position), Body.Rotation, Origin);
+            SpriteBatch.End();
+
+            base.Draw(gameTime);
+        }
+
+        public void SetDefaultBodyFixture()
+        {
             //Body = BodyFactory.CreateRectangle((Game as BazingaGame).World, ConvertUnits.ToSimUnits(Animation.FrameWidth), ConvertUnits.ToSimUnits(Animation.FrameHeight), 1f);
             Body = BodyFactory.CreateBody((Game as BazingaGame).World);
             Body.BodyType = BodyType.Dynamic;
@@ -68,55 +93,8 @@ namespace BazingaGame.Prefabs
             Body.FixedRotation = true;
             Body.Friction = 0.7f;
             Body.Restitution = 0.2f;
-            Body.CollisionCategories = Category.Cat1;
-            Body.CollidesWith = Category.All;
-
-            _spriteBatch = new SpriteBatch(this.Game.GraphicsDevice);
-            _state.Enter(this);
-
-            base.LoadContent();
-        }
-
-        public override void Update(GameTime gameTime)
-        {
-            KeyboardState kState = Keyboard.GetState();
-
-            HandleInput(kState);
-            UpdateState(gameTime);
-            Animation.Update(gameTime);
-
-            base.Update(gameTime);
-        }
-
-        private void UpdateState(GameTime gameTime)
-        {
-            if (_state != null)
-            {
-                IPlayerState newState = _state.Update(this, gameTime);
-
-                if (newState != null && _state != newState)
-                {
-                    _state.Exit(this);
-                    _state = newState;
-                    _state.Enter(this);
-                }
-            }
-        }
-
-        public void HandleInput(KeyboardState input)
-        {
-            IPlayerState newState = _state.HandleInput(this, input);
-
-            if (newState != null && _state != newState)
-            {
-                if (_state != null)
-                {
-                    _state.Exit(this);
-                }
-
-                _state = newState;
-                _state.Enter(this);
-            }
+            Body.CollisionCategories = BazingaCollisionGroups.Player;
+            Body.CollidesWith = BazingaCollisionGroups.SolidObject;
         }
 
         public void SetBodyFixture(Shape shape)
@@ -142,15 +120,6 @@ namespace BazingaGame.Prefabs
 
             //FixtureFactory.AttachRectangle(ConvertUnits.ToSimUnits(62), ConvertUnits.ToSimUnits(110), 1.0f, ConvertUnits.ToSimUnits(-9, 2), player.Body);
             FixtureFactory.AttachEllipse(ConvertUnits.ToSimUnits(xRadius), ConvertUnits.ToSimUnits(yRadius), 6, BodyDensity, ConvertUnits.ToSimUnits(offset), Body);
-        }
-
-        public override void Draw(GameTime gameTime)
-        {
-            _spriteBatch.Begin(transformMatrix: Game.Camera.GetTransformMatrix());
-            Animation.Draw(_spriteBatch, ConvertUnits.ToDisplayUnits(Body.Position), Body.Rotation, Origin);
-            _spriteBatch.End();
-
-            base.Draw(gameTime);
         }
     }
 }

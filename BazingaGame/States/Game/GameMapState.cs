@@ -5,38 +5,43 @@ using System.Text;
 using BazingaGame.GameMap;
 using BazingaGame.Particles;
 using BazingaGame.Prefabs;
+using BazingaGame.Prefabs.Dynamic;
+using BazingaGame.HUD;
 using FarseerPhysics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using GameInput;
 
 namespace BazingaGame.States.Game
 {
-    class GameMapState : IGameState
+	class GameMapState : SimpleGameObject, IGameState
     {
-        private BazingaGame Game;
         private Map _gameMap;
+        private GameHUD _gameHUD;
         private BazingaPlayer _gamePlayer;
         private ParticleEngine particleEngine;
         private SpriteFont _debugConsoleFont;
 
         private bool _renderDebugInfo = false;
 
-        SpriteBatch spriteBatch;
-
         public GameMapState(BazingaGame game)
+			:base(game)
         {
-            Game = game;
+
         }
 
-        public void Draw(GameTime gameTime)
-        {
-            spriteBatch.Begin();
+		public void SetNewGameState(IGameState newGameState)
+		{
+			
+		}
 
+		public void Draw(GameTime gameTime, SpriteBatch spriteBatch)
+        {
             if (_renderDebugInfo)
             {
                 spriteBatch.DrawString(_debugConsoleFont,
-                    String.Format("Screen size {0}, {1}", ConvertUnits.ToSimUnits(1920), ConvertUnits.ToSimUnits(1080)),
+					String.Format("Screen size {0}, {1}", ConvertUnits.ToSimUnits(Game.GetGameWidthInPixels()), ConvertUnits.ToSimUnits(Game.GetGameHeightInPixels())),
                     new Vector2(1000, 60), Color.Red);
                 spriteBatch.DrawString(_debugConsoleFont,
                     String.Format("Camera position: {0}, {1}", ConvertUnits.ToSimUnits(Game.Camera.Position.X), ConvertUnits.ToSimUnits(Game.Camera.Position.Y)),
@@ -56,35 +61,27 @@ namespace BazingaGame.States.Game
                     String.Format("Camera acceleration: {0}", ConvertUnits.ToSimUnits(Game.Camera._followAcceleration)),
                     new Vector2(1000, 260), Color.Red);
             }
-
-            spriteBatch.End();
         }
 
-        private KeyboardState _oldKeyboardState;
-
-        public IGameState Update(GameTime gameTime)
+		public IGameState Update(GameTime gameTime, InputHelper _gameInput)
         {
-            var keyboardState = Keyboard.GetState();
-
             //Game.World.Step(Math.Min((float)gameTime.ElapsedGameTime.TotalMilliseconds * 0.001f, (1f / 30f)));
             Game.World.Step(Math.Min((float)gameTime.ElapsedGameTime.TotalSeconds, (1f / 30f)));
 
-            if (keyboardState.IsKeyDown(Keys.F9) && !_oldKeyboardState.IsKeyDown(Keys.F9))
+			if (_gameInput.IsNewKeyPress(Keys.F9))
                 _renderDebugInfo = !_renderDebugInfo;
 
             particleEngine.Update();
-
-            _oldKeyboardState = keyboardState;
 
             return null;
         }
 
         public void Initialize()
         {
-            // Boxes
+            // Boxes (just for testing purphoses)
             for (int i = 0; i < 20; i++)
             {
-                Game.Components.Add(new Box(Game, i * 96, 10));
+                //Game.Components.Add(new Box(Game, i * 96, 10));
             }
 
             // Map
@@ -95,18 +92,27 @@ namespace BazingaGame.States.Game
             _gamePlayer = new BazingaPlayer(Game, 400, 100);
             Game.Components.Add(_gamePlayer);
 
+            // HUD
+            _gameHUD = new GameHUD(Game, new Vector2(20, 20));
+            Game.Components.Add(_gameHUD);
+
+            var box = new Crate(Game as BazingaGame, 430, -100);
+            Game.Components.Add(box);
+
             Texture2D texture = Game.Content.Load<Texture2D>("Particles/Particle"); //new Texture2D(graphics.GraphicsDevice, 10, 10)
 
             particleEngine = new ParticleEngine(Game, texture, new Vector2(800, 10));
             Game.Components.Add(particleEngine);
+
+#if DEBUG
+			Game.Camera.SetPlayerToFollow(_gamePlayer);
+#else
+			Game.Camera.SetPlayerToFollow(_gamePlayer);
+#endif
         }
-
-
 
         public void LoadContent()
         {
-            spriteBatch = new SpriteBatch(Game.GraphicsDevice);
-
             _debugConsoleFont = Game.Content.Load<SpriteFont>("Text");
         }
     }

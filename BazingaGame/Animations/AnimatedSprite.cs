@@ -80,6 +80,30 @@ namespace BazingaGame.Animations
             }
         }
 
+        public void FlipHorizontally(bool flip = true)
+        {
+            if (flip)
+            {
+                Effect |= SpriteEffects.FlipHorizontally;
+            }
+            else
+            {
+                Effect &= ~SpriteEffects.FlipHorizontally;
+            }
+        }
+
+        public void FlipVertically(bool flip = true)
+        {
+            if (flip)
+            {
+                Effect |= SpriteEffects.FlipVertically;
+            }
+            else
+            {
+                Effect &= ~SpriteEffects.FlipVertically;
+            } 
+        }
+
         public void Draw(SpriteBatch spriteBatch, Vector2 location, float rotation, Vector2 origin)
         {
             

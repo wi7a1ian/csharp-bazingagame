@@ -1,8 +1,10 @@
 ﻿using BazingaGame.Animations;
 using BazingaGame.Prefabs;
+using BazingaGame.Sounds;
 using FarseerPhysics;
 using FarseerPhysics.Factories;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
@@ -16,7 +18,7 @@ namespace BazingaGame.States.Player
     /// Finite State Mchine Pattern
     /// http://gameprogrammingpatterns.com/state.html
     /// </summary>
-    public class PlayerRunningState : IPlayerState
+    public class PlayerRunningState : IGameComponentState
     {
         const float RunForce = 50;
         const float MinTurnAroundVelocity = 5;
@@ -27,15 +29,23 @@ namespace BazingaGame.States.Player
         private const int FixtureRadiusY = 65;
         private readonly Vector2 FixtureOffset = new Vector2(0, 0);
 
-        public void Enter(BazingaPlayer player)
+        private const string SoundEffect = @"Sounds/run";
+
+        private BazingaPlayer player;
+
+        public void EnterState(StatefulGameComponent target)
         {
+            player = target as BazingaPlayer;
+
             player.SetBodyFixture(FixtureRadiusX, FixtureRadiusY, FixtureOffset);
             player.Body.Awake = true;
+
+            player.Sounds.PlaySound(SoundEffect, false);
         }
 
-        public IPlayerState HandleInput(BazingaPlayer player, KeyboardState input)
+        public IGameComponentState HandleInput(KeyboardState input)
         {
-            IPlayerState newState = null;
+            IGameComponentState newState = null;
 
             float xForce = 0;
             float yForce = 0;
@@ -66,6 +76,7 @@ namespace BazingaGame.States.Player
             if (input.IsKeyDown(Keys.Down) && Math.Abs(player.Body.LinearVelocity.X) >= MinSlideVelocity)
             {
                 return new PlayerSlideState();
+
             }
             else if (input.IsKeyDown(Keys.LeftControl) && Math.Abs(player.Body.LinearVelocity.X) <= MaxAttackVelocity)
             {
@@ -83,14 +94,15 @@ namespace BazingaGame.States.Player
             return newState;
         }
 
-        public IPlayerState Update(BazingaPlayer player, GameTime gameTime)
+
+        public IGameComponentState Update(GameTime gameTime)
         {
             return null;
         }
 
-        public void Exit(BazingaPlayer player)
+        public void ExitState()
         {
-            // Nop
+            //soundEffect.Stop();
         }
     }
 }

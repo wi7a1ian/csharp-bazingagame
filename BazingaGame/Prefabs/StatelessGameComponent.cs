@@ -5,15 +5,15 @@ using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace BazingaGame
+namespace BazingaGame.Prefabs
 {
-    public class GameObject : DrawableGameComponent
+    public class StatelessGameComponent : DrawableGameComponent
     {
         public new BazingaGame Game;
 
         protected SpriteBatch SpriteBatch;
 
-        public GameObject(BazingaGame game)
+        public StatelessGameComponent(BazingaGame game)
             :base(game)
         {
             Game = game;

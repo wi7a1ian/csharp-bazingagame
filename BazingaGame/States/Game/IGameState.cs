@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using GameInput;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
 namespace BazingaGame.States.Game
@@ -15,8 +17,10 @@ namespace BazingaGame.States.Game
     {
         //void Enter(BazingaPlayer player);
         //IGameState HandleInput(KeyboardState input);
-        void Draw(GameTime gameTime);
-        IGameState Update(GameTime gameTime);
+        void Draw(GameTime gameTime, SpriteBatch spriteBatch);
+		//IGameState Update(GameTime gameTime, KeyboardState keyboardState, KeyboardState oldKeyboardState);
+		IGameState Update(GameTime gameTime, InputHelper inputHelper);
+		//void SetNewGameState(IGameState newGameState);
         void LoadContent();
         void Initialize();
     }
