@@ -269,7 +269,7 @@ namespace FarseerPhysics.Samples.Demos
 
         public override void HandleInput(InputHelper input, GameTime gameTime)
         {
-            if (input.VirtualState.ThumbSticks.Left.X > 0.5f)
+            if (input.VirtualState.ThumbSticks.Left.X > 0.5f || input.KeyboardState.IsKeyDown(Keys.A))
                 _acceleration = Math.Min(_acceleration + (float)(2.0 * gameTime.ElapsedGameTime.TotalSeconds), 1f);
             else if (input.VirtualState.ThumbSticks.Left.X < -0.5f)
                 _acceleration = Math.Max(_acceleration - (float)(2.0 * gameTime.ElapsedGameTime.TotalSeconds), -1f);

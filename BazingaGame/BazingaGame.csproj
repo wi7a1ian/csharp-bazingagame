@@ -43,14 +43,40 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Animations\AnimatedSprite.cs" />
+    <Compile Include="Input\InputHelper.cs" />
+    <Compile Include="Menu\Menu.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Menu\MenuButton.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Menu\MenuEntry.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="States\Game\GameMapState.cs" />
+    <Compile Include="States\Game\IGameState.cs" />
+    <Compile Include="States\Game\MainMenuState.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="States\Game\SplashScreenState.cs" />
+    <Compile Include="States\Player\IPlayerState.cs" />
+    <Compile Include="States\Player\PlayerAttackState.cs" />
+    <Compile Include="States\Player\PlayerIdleState.cs" />
+    <Compile Include="States\Player\PlayerJumpState.cs" />
+    <Compile Include="States\Player\PlayerRunningState.cs" />
+    <Compile Include="Animations\SpriteState.cs" />
     <Compile Include="BazingaGame.cs" />
     <Compile Include="Camera\Camera.cs" />
+    <Compile Include="GameObject.cs" />
     <Compile Include="Map\Direction.cs" />
     <Compile Include="Map\Map.cs" />
+    <Compile Include="Particles\Particle.cs" />
+    <Compile Include="Particles\ParticleGenerator.cs" />
     <Compile Include="Prefabs\Dynamic\BazingaBox.cs" />
-    <Compile Include="Prefabs\Player.cs" />
+    <Compile Include="Prefabs\Special\BazingaPlayer.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="States\Player\PlayerSlideState.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="MonoGame.Framework">

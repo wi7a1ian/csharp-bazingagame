@@ -80,6 +80,23 @@ namespace FarseerPhysics.Factories
             return body.CreateFixture(polygonShape, userData);
         }
 
+        /// <summary>
+        /// Bazinga!
+        /// </summary>
+        public static Fixture AttachEllipse(float xRadius, float yRadius, int edges, float density, Vector2 offset, Body body, object userData = null)
+        {
+            if (xRadius <= 0)
+                throw new ArgumentOutOfRangeException("xRadius", "X-radius must be more than 0");
+
+            if (yRadius <= 0)
+                throw new ArgumentOutOfRangeException("yRadius", "Y-radius must be more than 0");
+
+            Vertices ellipseVertices = PolygonTools.CreateEllipse(xRadius, yRadius, edges);
+            ellipseVertices.Translate(offset);
+            PolygonShape polygonShape = new PolygonShape(ellipseVertices, density);
+            return body.CreateFixture(polygonShape, userData);
+        }
+
         public static List<Fixture> AttachCompoundPolygon(List<Vertices> list, float density, Body body, object userData = null)
         {
             List<Fixture> res = new List<Fixture>(list.Count);

@@ -5,8 +5,6 @@ VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BazingaGame", "BazingaGame\BazingaGame.csproj", "{08057F94-B53F-4891-AA9F-8EBD7F5B85A6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DebugView MonoGame", "Farseer Physics DebugView 3.5\DebugView MonoGame.csproj", "{566F1803-90B5-4947-8730-57F092FBB002}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Farseer Physics MonoGame", "Farseer Physics Engine 3.5\Farseer Physics MonoGame.csproj", "{0AAD36E3-51A5-4A07-AB60-5C8A66BD38B7}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Samples MonoGame", "Farseer Physics Samples 3.5\Samples MonoGame.csproj", "{2ACA1733-86AF-404D-B8DB-333990D68DCE}"
@@ -20,6 +18,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		READ_ME.txt = READ_ME.txt
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DebugView MonoGame", "Farseer Physics DebugView 3.5\DebugView MonoGame.csproj", "{566F1803-90B5-4947-8730-57F092FBB002}"
+EndProject
 Global
 	GlobalSection(TeamFoundationVersionControl) = preSolution
 		SccNumberOfProjects = 7
@@ -29,21 +29,21 @@ Global
 		SccProjectUniqueName1 = BazingaGame\\BazingaGame.csproj
 		SccProjectName1 = BazingaGame
 		SccLocalPath1 = BazingaGame
-		SccProjectUniqueName2 = Farseer\u0020Physics\u0020DebugView\u00203.5\\DebugView\u0020MonoGame.csproj
-		SccProjectName2 = Farseer\u0020Physics\u0020DebugView\u00203.5
-		SccLocalPath2 = Farseer\u0020Physics\u0020DebugView\u00203.5
-		SccProjectUniqueName3 = Farseer\u0020Physics\u0020Engine\u00203.5\\Farseer\u0020Physics\u0020MonoGame.csproj
-		SccProjectName3 = Farseer\u0020Physics\u0020Engine\u00203.5
-		SccLocalPath3 = Farseer\u0020Physics\u0020Engine\u00203.5
-		SccProjectUniqueName4 = Farseer\u0020Physics\u0020Samples\u00203.5\\Samples\u0020MonoGame.csproj
-		SccProjectName4 = Farseer\u0020Physics\u0020Samples\u00203.5
-		SccLocalPath4 = Farseer\u0020Physics\u0020Samples\u00203.5
-		SccProjectUniqueName5 = MapFileModel\\MapFileModel.csproj
-		SccProjectName5 = MapFileModel
-		SccLocalPath5 = MapFileModel
-		SccProjectUniqueName6 = MapEditor\\MapEditor.csproj
-		SccProjectName6 = MapEditor
-		SccLocalPath6 = MapEditor
+		SccProjectUniqueName2 = Farseer\u0020Physics\u0020Engine\u00203.5\\Farseer\u0020Physics\u0020MonoGame.csproj
+		SccProjectName2 = Farseer\u0020Physics\u0020Engine\u00203.5
+		SccLocalPath2 = Farseer\u0020Physics\u0020Engine\u00203.5
+		SccProjectUniqueName3 = Farseer\u0020Physics\u0020Samples\u00203.5\\Samples\u0020MonoGame.csproj
+		SccProjectName3 = Farseer\u0020Physics\u0020Samples\u00203.5
+		SccLocalPath3 = Farseer\u0020Physics\u0020Samples\u00203.5
+		SccProjectUniqueName4 = MapFileModel\\MapFileModel.csproj
+		SccProjectName4 = MapFileModel
+		SccLocalPath4 = MapFileModel
+		SccProjectUniqueName5 = MapEditor\\MapEditor.csproj
+		SccProjectName5 = MapEditor
+		SccLocalPath5 = MapEditor
+		SccProjectUniqueName6 = Farseer\u0020Physics\u0020DebugView\u00203.5\\DebugView\u0020MonoGame.csproj
+		SccProjectName6 = Farseer\u0020Physics\u0020DebugView\u00203.5
+		SccLocalPath6 = Farseer\u0020Physics\u0020DebugView\u00203.5
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -64,16 +64,6 @@ Global
 		{08057F94-B53F-4891-AA9F-8EBD7F5B85A6}.Release|Mixed Platforms.Build.0 = Release|x86
 		{08057F94-B53F-4891-AA9F-8EBD7F5B85A6}.Release|x86.ActiveCfg = Release|x86
 		{08057F94-B53F-4891-AA9F-8EBD7F5B85A6}.Release|x86.Build.0 = Release|x86
-		{566F1803-90B5-4947-8730-57F092FBB002}.Debug|Any CPU.ActiveCfg = Debug|x86
-		{566F1803-90B5-4947-8730-57F092FBB002}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
-		{566F1803-90B5-4947-8730-57F092FBB002}.Debug|Mixed Platforms.Build.0 = Debug|x86
-		{566F1803-90B5-4947-8730-57F092FBB002}.Debug|x86.ActiveCfg = Debug|x86
-		{566F1803-90B5-4947-8730-57F092FBB002}.Debug|x86.Build.0 = Debug|x86
-		{566F1803-90B5-4947-8730-57F092FBB002}.Release|Any CPU.ActiveCfg = Release|x86
-		{566F1803-90B5-4947-8730-57F092FBB002}.Release|Mixed Platforms.ActiveCfg = Release|x86
-		{566F1803-90B5-4947-8730-57F092FBB002}.Release|Mixed Platforms.Build.0 = Release|x86
-		{566F1803-90B5-4947-8730-57F092FBB002}.Release|x86.ActiveCfg = Release|x86
-		{566F1803-90B5-4947-8730-57F092FBB002}.Release|x86.Build.0 = Release|x86
 		{0AAD36E3-51A5-4A07-AB60-5C8A66BD38B7}.Debug|Any CPU.ActiveCfg = Debug|x86
 		{0AAD36E3-51A5-4A07-AB60-5C8A66BD38B7}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
 		{0AAD36E3-51A5-4A07-AB60-5C8A66BD38B7}.Debug|Mixed Platforms.Build.0 = Debug|x86
@@ -114,6 +104,16 @@ Global
 		{F0F00B2C-F480-4D6A-A469-FF4283F44029}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{F0F00B2C-F480-4D6A-A469-FF4283F44029}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{F0F00B2C-F480-4D6A-A469-FF4283F44029}.Release|x86.ActiveCfg = Release|Any CPU
+		{566F1803-90B5-4947-8730-57F092FBB002}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{566F1803-90B5-4947-8730-57F092FBB002}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{566F1803-90B5-4947-8730-57F092FBB002}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{566F1803-90B5-4947-8730-57F092FBB002}.Debug|x86.ActiveCfg = Debug|x86
+		{566F1803-90B5-4947-8730-57F092FBB002}.Debug|x86.Build.0 = Debug|x86
+		{566F1803-90B5-4947-8730-57F092FBB002}.Release|Any CPU.ActiveCfg = Release|x86
+		{566F1803-90B5-4947-8730-57F092FBB002}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{566F1803-90B5-4947-8730-57F092FBB002}.Release|Mixed Platforms.Build.0 = Release|x86
+		{566F1803-90B5-4947-8730-57F092FBB002}.Release|x86.ActiveCfg = Release|x86
+		{566F1803-90B5-4947-8730-57F092FBB002}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

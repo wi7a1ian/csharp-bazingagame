@@ -9,13 +9,13 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using BazingaGame.GameMap;
-using BazingaGame.GameCamera;
+using BazingaGame.Display;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.IO;
 
 namespace BazingaGame.GameMap
 {
-    public class Map : DrawableGameComponent
+    public class Map : GameObject
     {
         //private BazingaGame _game;
         private MapTileInfo[][] _mapTiles;
@@ -112,12 +112,20 @@ namespace BazingaGame.GameMap
                         _mapTiles[i][j].Body.Position = ConvertUnits.ToSimUnits((i) * TileSize + TileSize / 2f, (j) * TileSize + TileSize / 2f);
                         _mapTiles[i][j].Body.Friction = 1f;
                         _mapTiles[i][j].Body.Restitution = 0f;
+                        _mapTiles[i][j].Body.CollisionCategories = Category.Cat2;
+                        _mapTiles[i][j].Body.CollidesWith = Category.All;
                     }
                     else
                     {
                         _mapTiles[i][j].IsPassable = true;
                         _mapTiles[i][j].Origin = new Vector2(TileSize / 2f, TileSize / 2f);
                         _mapTiles[i][j].Body = null;
+                    }
+
+                    if (_mapTiles[i][j].TileSprite == MapSpriteTile.GroundRight)
+                    {
+                        _mapTiles[i][j].Body.Friction = 0;
+
                     }
                 }
             }
@@ -150,7 +158,7 @@ namespace BazingaGame.GameMap
             _spriteBatch.Draw(BackgroundSprite, new Vector2(), new Rectangle(0, 0, 1920, 1080), Color.White, 0f, new Vector2(), 1f, SpriteEffects.None, 0f);
             _spriteBatch.End();
 
-            _spriteBatch.Begin(transformMatrix: BazingaCamera.GetCamera().TranslationMatrix);
+            _spriteBatch.Begin(transformMatrix: Game.Camera.GetTransformMatrix());
             for (int i = 0; i < _mapTiles.Length; i++)
             {
                 for (int j = 0; j < _mapTiles[0].Length; j++)
